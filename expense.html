@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
@@ -48,7 +48,7 @@
             }
         }
 
-        /* Remove HTML5 number input spinner arrows */
+        /* Hide HTML5 number input spinner arrows */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -58,13 +58,12 @@
             -moz-appearance: textfield;
         }
 
-        /* Prevent overscroll bounce on mobile headers */
         body {
             touch-action: manipulation;
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-24 md:pb-6 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 font-sans pb-28 md:pb-6 min-h-screen flex flex-col justify-between">
 
     <!-- Header Section -->
     <header class="bg-gradient-to-r from-mandi-900 via-mandi-800 to-emerald-800 text-white shadow-md sticky top-0 z-30 no-print">
@@ -91,7 +90,7 @@
         </div>
     </header>
 
-    <!-- Main Mobile Optimized Container -->
+    <!-- Main Container -->
     <main class="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex-grow w-full">
         
         <!-- Print Receipt Header (Only visible in Print mode) -->
@@ -109,7 +108,7 @@
             </div>
         </div>
 
-        <!-- Mobile View Toggle (Tab Switcher for quick mobile access) -->
+        <!-- Mobile View Toggle (Tab Switcher for low-scroll mobile navigation) -->
         <div class="flex sm:hidden bg-slate-200 p-1 rounded-xl mb-3 no-print">
             <button id="tabInputsBtn" onclick="switchMobileTab('inputs')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-mandi-800 transition">
                 <i class="fa-solid fa-pen-to-square mr-1"></i> Input Charges
@@ -121,10 +120,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-            <!-- Inputs Column (Mobile Viewable default) -->
+            <!-- Inputs Column -->
             <div id="inputsSection" class="lg:col-span-7 space-y-3">
                 
-                <!-- 1. Primary Purchase Parameters (Quintal & Base Rate) -->
+                <!-- 1. Primary Purchase Parameters (Quintals & Base Rate) -->
                 <div class="bg-white p-3.5 sm:p-5 rounded-xl shadow-sm border border-slate-200 print-card">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-mandi-800 mb-2.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-weight-hanging text-amber-500"></i> Quantity & Base Purchase Rate
@@ -160,82 +159,113 @@
                 <div class="bg-white p-3.5 sm:p-5 rounded-xl shadow-sm border border-slate-200 print-card">
                     <h2 class="text-xs font-bold uppercase tracking-wider text-mandi-800 mb-3 flex items-center justify-between">
                         <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-calculator text-mandi-600"></i> Mandi & Handling Charges
+                            <i class="fa-solid fa-calculator text-mandi-600"></i> Mandi & Expense Charges
                         </span>
-                        <span class="text-[10px] text-slate-400 normal-case font-normal">(Total ₹ per field)</span>
+                        <span class="text-[10px] text-slate-400 normal-case font-normal">(Auto-calculated ₹ totals)</span>
                     </h2>
 
                     <div class="grid grid-cols-2 gap-2.5 sm:gap-3.5">
 
-                        <!-- Hamali Loading -->
+                        <!-- Hamali Loading (Per Quintal) -->
                         <div>
-                            <label for="hamaliLoading" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-truck-loading text-slate-400 mr-0.5"></i> Hamali (Loading)
+                            <label for="hamaliLoadingRate" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-truck-loading text-slate-400 mr-0.5"></i> Hamali Loading (₹/Qtl)
                             </label>
                             <div class="relative">
                                 <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
-                                <input type="number" id="hamaliLoading" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                <input type="number" id="hamaliLoadingRate" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
+                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                            </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcHamaliLoading">0</span></span>
+                        </div>
+
+                        <!-- Transportation (Per Ton - 1 Ton = 10 Qtls) -->
+                        <div>
+                            <label for="transportRatePerTon" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-truck-moving text-slate-400 mr-0.5"></i> Transport (₹/Ton)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
+                                <input type="number" id="transportRatePerTon" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
+                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                            </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcTransport">0</span></span>
+                        </div>
+
+                        <!-- Hamali Unloading (Per Quintal) -->
+                        <div>
+                            <label for="hamaliUnloadingRate" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-dolly text-slate-400 mr-0.5"></i> Hamali Unload (₹/Qtl)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
+                                <input type="number" id="hamaliUnloadingRate" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
+                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                            </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcHamaliUnloading">0</span></span>
+                        </div>
+
+                        <!-- Channi Charges (Per Quintal) -->
+                        <div>
+                            <label for="channiRate" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-filter text-slate-400 mr-0.5"></i> Channi (₹/Qtl)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
+                                <input type="number" id="channiRate" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
+                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                            </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcChanni">0</span></span>
+                        </div>
+
+                        <!-- Brokerage Charges (Per Quintal) -->
+                        <div>
+                            <label for="brokerageRatePerQtl" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-handshake text-slate-400 mr-0.5"></i> Brokerage (₹/Qtl)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
+                                <input type="number" id="brokerageRatePerQtl" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
+                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                            </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcBrokerage">0</span></span>
+                        </div>
+
+                        <!-- Gunny Bag Cost Per Bag -->
+                        <div>
+                            <label for="gunnyBagCost" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-box-archive text-slate-400 mr-0.5"></i> Gunny Bag (₹/Bag)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
+                                <input type="number" id="gunnyBagCost" inputmode="decimal" step="any" min="0" placeholder="0" 
                                        oninput="calculateExpenses()" onchange="calculateExpenses()"
                                        class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
                             </div>
                         </div>
 
-                        <!-- Transportation -->
+                        <!-- Gunny Bags Count -->
                         <div>
-                            <label for="transportation" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-truck-moving text-slate-400 mr-0.5"></i> Transportation
+                            <label for="gunnyBagCount" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
+                                <i class="fa-solid fa-boxes-stacked text-slate-400 mr-0.5"></i> Bag Count (Bags)
                             </label>
                             <div class="relative">
-                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
-                                <input type="number" id="transportation" inputmode="decimal" step="any" min="0" placeholder="0" 
+                                <input type="number" id="gunnyBagCount" inputmode="decimal" step="any" min="0" placeholder="0" 
                                        oninput="calculateExpenses()" onchange="calculateExpenses()"
-                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
+                                       class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
                             </div>
+                            <span class="text-[10px] text-slate-500 block text-right mt-0.5">Tot: ₹<span id="calcGunnyBag">0</span></span>
                         </div>
 
-                        <!-- Hamali Unloading -->
-                        <div>
-                            <label for="hamaliUnloading" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-dolly text-slate-400 mr-0.5"></i> Hamali (Unloading)
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
-                                <input type="number" id="hamaliUnloading" inputmode="decimal" step="any" min="0" placeholder="0" 
-                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
-                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
-                            </div>
-                        </div>
-
-                        <!-- Channi Charges -->
-                        <div>
-                            <label for="channi" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-filter text-slate-400 mr-0.5"></i> Channi (Cleaning)
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
-                                <input type="number" id="channi" inputmode="decimal" step="any" min="0" placeholder="0" 
-                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
-                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
-                            </div>
-                        </div>
-
-                        <!-- Gunny Bag Charges -->
-                        <div>
-                            <label for="gunnyBag" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-box-archive text-slate-400 mr-0.5"></i> Gunny Bag / Bardana
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
-                                <input type="number" id="gunnyBag" inputmode="decimal" step="any" min="0" placeholder="0" 
-                                       oninput="calculateExpenses()" onchange="calculateExpenses()"
-                                       class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
-                            </div>
-                        </div>
-
-                        <!-- Others / Misc -->
+                        <!-- Others / Miscellaneous (Direct Lump Sum) -->
                         <div>
                             <label for="others" class="block text-[11px] font-medium text-slate-700 truncate mb-1">
-                                <i class="fa-solid fa-receipt text-slate-400 mr-0.5"></i> Others / Misc
+                                <i class="fa-solid fa-receipt text-slate-400 mr-0.5"></i> Others / Misc (₹)
                             </label>
                             <div class="relative">
                                 <span class="absolute left-2.5 top-2 text-slate-400 text-xs font-semibold">₹</span>
@@ -243,39 +273,51 @@
                                        oninput="calculateExpenses()" onchange="calculateExpenses()"
                                        class="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-900 font-semibold text-sm text-right transition">
                             </div>
+                            <span class="text-[10px] text-slate-400 block text-right mt-0.5">Lump sum</span>
                         </div>
 
                     </div>
 
-                    <!-- Remarks Input -->
-                    <div class="mt-3 pt-2 border-t border-slate-100">
-                        <label for="remarks" class="block text-[11px] font-semibold text-slate-600 mb-1">
-                            Commodity Note / Remarks
+                    <!-- Additional Remarks Field -->
+                    <div class="mt-3 pt-2.5 border-t border-slate-100">
+                        <label for="remarks" class="block text-[11px] font-medium text-slate-600 mb-1">
+                            <i class="fa-solid fa-pen text-slate-400 mr-0.5"></i> Remarks / Batch No. (Optional)
                         </label>
-                        <input type="text" id="remarks" placeholder="e.g. Cotton Lot #104, Desi Chana..."
-                               class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-mandi-600 text-slate-800 text-xs transition">
+                        <input type="text" id="remarks" placeholder="e.g. Cotton Batch #12 - Farmer: Ramesh" 
+                               class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-mandi-600">
                     </div>
                 </div>
 
             </div>
 
-            <!-- Summary Column (Full Breakdown Viewable) -->
-            <div id="summarySection" class="hidden sm:block lg:col-span-5 space-y-4">
+            <!-- Summary & Breakdown Column -->
+            <div id="summarySection" class="lg:col-span-5 space-y-3 hidden sm:block">
                 
-                <div class="bg-white p-4 sm:p-5 rounded-xl shadow-md border border-slate-200 sticky top-16 print-card">
-                    <h2 class="text-sm font-bold text-slate-900 border-b pb-2 mb-3 flex justify-between items-center">
-                        <span>Financial Summary</span>
-                        <span class="text-[10px] bg-mandi-100 text-mandi-800 font-semibold px-2 py-0.5 rounded-full">Real-Time</span>
-                    </h2>
-
-                    <!-- Main Total Box -->
-                    <div class="bg-gradient-to-br from-mandi-900 to-emerald-800 rounded-xl p-3.5 text-white shadow-inner mb-4 text-center">
-                        <span class="text-[10px] uppercase tracking-wider font-semibold text-emerald-200">Total Expenses</span>
-                        <div class="text-3xl font-extrabold tracking-tight mt-0.5">
-                            ₹ <span id="totalExpensesDisplay">0.00</span>
-                        </div>
-                        <p class="text-[11px] text-emerald-200 mt-0.5" id="perQuintalBreakdownText">Expense: ₹ 0.00 / Qtl</p>
+                <!-- Total Expenses Card -->
+                <div class="bg-gradient-to-br from-mandi-900 to-mandi-800 text-white p-4 sm:p-5 rounded-xl shadow-md relative overflow-hidden print-card">
+                    <div class="absolute -right-6 -bottom-6 opacity-10 text-white">
+                        <i class="fa-solid fa-calculator text-9xl"></i>
                     </div>
+                    <div class="relative z-10">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-mandi-100 block mb-1">
+                            Total Mandi Expenses
+                        </span>
+                        <div class="flex items-baseline space-x-1">
+                            <span class="text-xl font-bold text-amber-400">₹</span>
+                            <span id="totalExpensesDisplay" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">0.00</span>
+                        </div>
+                        <p id="perQuintalBreakdownText" class="text-xs text-mandi-100 mt-1.5 font-medium">
+                            Enter weight to calculate cost per Qtl
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Breakdown Table Card -->
+                <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 print-card">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 border-b pb-2 mb-3 flex items-center justify-between">
+                        <span>Financial Summary</span>
+                        <i class="fa-solid fa-list-check text-mandi-600"></i>
+                    </h3>
 
                     <!-- Itemized Breakdown List -->
                     <div class="space-y-2 border-b pb-3 text-xs">
@@ -300,6 +342,10 @@
                             <span class="font-semibold text-slate-900" id="summaryChanni">₹ 0.00</span>
                         </div>
                         <div class="flex justify-between items-center text-slate-600">
+                            <span>Brokerage:</span>
+                            <span class="font-semibold text-slate-900" id="summaryBrokerage">₹ 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600">
                             <span>Gunny Bag / Bardana:</span>
                             <span class="font-semibold text-slate-900" id="summaryGunnyBag">₹ 0.00</span>
                         </div>
@@ -309,38 +355,37 @@
                         </div>
                     </div>
 
-                    <!-- Landed Cost Summary Footer info -->
-                    <div class="pt-3 space-y-1.5 text-xs">
-                        <div class="flex justify-between text-slate-600">
-                            <span>Total Weight:</span>
-                            <span class="font-semibold text-slate-800" id="summaryWeight">0.00 Qtl</span>
+                    <!-- Final Landed Cost & Weight Summary -->
+                    <div class="mt-3 pt-1 space-y-2 text-xs">
+                        <div class="flex justify-between items-center text-slate-700">
+                            <span>Total Quantity:</span>
+                            <span class="font-bold text-slate-900" id="summaryWeight">0.00 Qtl</span>
                         </div>
-                        <div class="flex justify-between text-slate-600">
-                            <span>Expense Rate / Qtl:</span>
-                            <span class="font-semibold text-mandi-700" id="summaryEffectiveRate">₹ 0.00 / Qtl</span>
+                        <div class="flex justify-between items-center text-slate-700">
+                            <span>Expense Cost / Qtl:</span>
+                            <span class="font-bold text-emerald-700" id="summaryEffectiveRate">₹ 0.00 / Qtl</span>
                         </div>
-                        <div class="flex justify-between items-center pt-1.5 border-t text-xs sm:text-sm font-bold text-slate-900">
-                            <span>Total Landed Cost:</span>
-                            <span class="text-mandi-800 text-sm sm:text-base" id="summaryLandedCost">₹ 0.00</span>
+                        <div class="flex justify-between items-center text-sm pt-2 border-t border-slate-200">
+                            <span class="font-bold text-slate-900">Total Landed Cost:</span>
+                            <span class="font-extrabold text-mandi-800 text-base" id="summaryLandedCost">₹ 0.00</span>
                         </div>
-                        <div class="flex justify-between text-slate-700">
-                            <span>Final Landed Rate:</span>
-                            <span class="font-bold text-slate-900 text-xs sm:text-sm" id="summaryLandedPerQtl">₹ 0.00 / Qtl</span>
-                        </div>
-                    </div>
-
-                    <!-- Stamp / Signature Box for Print -->
-                    <div class="hidden print:block mt-10 pt-6 border-t border-slate-300 text-center">
-                        <div class="flex justify-between items-end text-xs text-slate-600">
-                            <div>
-                                <p class="border-t border-slate-400 pt-1 w-28">Trader Signature</p>
-                            </div>
-                            <div>
-                                <p class="border-t border-slate-400 pt-1 w-28">Authorized Stamp</p>
-                            </div>
+                        <div class="flex justify-between items-center text-xs bg-amber-50 p-2 rounded-lg border border-amber-200">
+                            <span class="font-bold text-amber-900">Final Landed Rate:</span>
+                            <span class="font-black text-amber-900 text-sm" id="summaryLandedPerQtl">₹ 0.00 / Qtl</span>
                         </div>
                     </div>
+                </div>
 
+                <!-- Print Mode Signature Block -->
+                <div class="hidden print:block pt-12 mt-8 border-t">
+                    <div class="flex justify-between text-xs text-slate-600">
+                        <div class="text-center w-36 border-t border-slate-400 pt-1">
+                            Trader / Manager Sign
+                        </div>
+                        <div class="text-center w-36 border-t border-slate-400 pt-1">
+                            Stamp / Verification
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -349,24 +394,22 @@
 
     </main>
 
-    <!-- Mobile Fixed Bottom Summary Bar (No-scroll instant viewing for field workers) -->
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-900 text-white p-3 border-t border-slate-800 shadow-2xl flex items-center justify-between z-40 sm:hidden no-print">
+    <!-- Mobile Sticky Bottom Live Bar (Pinned at bottom for instant view) -->
+    <div class="sm:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white px-4 py-2.5 shadow-lg border-t border-slate-800 z-40 flex items-center justify-between no-print">
         <div>
-            <span class="text-[10px] text-slate-400 uppercase font-semibold block leading-tight">Total Expenses</span>
-            <span class="text-xl font-extrabold text-amber-400 leading-tight">₹ <span id="mobileBottomTotal">0.00</span></span>
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Total Expenses</span>
+            <div class="flex items-baseline space-x-1">
+                <span class="text-xs text-amber-400 font-bold">₹</span>
+                <span id="mobileBottomTotal" class="text-xl font-black text-amber-400">0.00</span>
+            </div>
         </div>
         <div class="text-right">
-            <span class="text-[10px] text-slate-400 uppercase font-semibold block leading-tight">Landed Rate / Qtl</span>
-            <span class="text-sm font-bold text-emerald-400 leading-tight" id="mobileBottomLandedPerQtl">₹ 0.00 / Qtl</span>
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Landed / Qtl</span>
+            <span id="mobileBottomLandedPerQtl" class="text-sm font-bold text-emerald-400">₹ 0.00 / Qtl</span>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-3 text-center text-[11px] border-t border-slate-800 no-print hidden sm:block">
-        <p>© Adilabad Agricultural Trading Firm Expense Utility • Built for Market Operations</p>
-    </footer>
-
-    <!-- JavaScript Logic -->
+    <!-- Script Section -->
     <script>
         // Formatter for Indian Currency Standard
         const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -374,7 +417,7 @@
             maximumFractionDigits: 2
         });
 
-        // Utility to safely parse numerical inputs
+        // Safe numerical input parser
         function getNum(id) {
             const el = document.getElementById(id);
             if (!el || !el.value) return 0;
@@ -406,29 +449,64 @@
 
         // Main Calculation Function
         function calculateExpenses() {
-            const weight = getNum('totalQuintals');
+            const weightInQuintals = getNum('totalQuintals');
             const baseRate = getNum('baseRate');
-            const hamaliLoading = getNum('hamaliLoading');
-            const transport = getNum('transportation');
-            const hamaliUnloading = getNum('hamaliUnloading');
-            const channi = getNum('channi');
-            const gunnyBag = getNum('gunnyBag');
-            const others = getNum('others');
 
-            // Base Goods Value calculation
-            const totalBaseGoodsValue = weight * baseRate;
+            // 1. Hamali Loading = Rate per Qtl * Total Quintals
+            const hamaliLoadingRate = getNum('hamaliLoadingRate');
+            const totalHamaliLoading = hamaliLoadingRate * weightInQuintals;
 
-            // Calculate total direct expenses
-            const totalExpenses = hamaliLoading + transport + hamaliUnloading + channi + gunnyBag + others;
+            // 2. Transportation = Rate per Ton * Total Tons (1 Ton = 10 Quintals)
+            const transportRatePerTon = getNum('transportRatePerTon');
+            const weightInTons = weightInQuintals / 10;
+            const totalTransportation = transportRatePerTon * weightInTons;
 
-            // Calculate overall expense cost per quintal
-            const expenseCostPerQuintal = weight > 0 ? (totalExpenses / weight) : 0;
+            // 3. Hamali Unloading = Rate per Qtl * Total Quintals
+            const hamaliUnloadingRate = getNum('hamaliUnloadingRate');
+            const totalHamaliUnloading = hamaliUnloadingRate * weightInQuintals;
 
-            // Calculate Total Landed Cost (Base Purchase + Total Expenses)
+            // 4. Channi = Rate per Qtl * Total Quintals
+            const channiRate = getNum('channiRate');
+            const totalChanni = channiRate * weightInQuintals;
+
+            // 5. Brokerage = Rate per Qtl * Total Quintals
+            const brokerageRatePerQtl = getNum('brokerageRatePerQtl');
+            const totalBrokerage = brokerageRatePerQtl * weightInQuintals;
+
+            // 6. Gunny Bags = Cost per Bag * Bag Count
+            const gunnyBagCost = getNum('gunnyBagCost');
+            const gunnyBagCount = getNum('gunnyBagCount');
+            const totalGunnyBag = gunnyBagCost * gunnyBagCount;
+
+            // 7. Others / Miscellaneous (Direct Lump Sum)
+            const totalOthers = getNum('others');
+
+            // Base Goods Value
+            const totalBaseGoodsValue = weightInQuintals * baseRate;
+
+            // Total Expenses Sum
+            const totalExpenses = totalHamaliLoading + totalTransportation + totalHamaliUnloading + totalChanni + totalBrokerage + totalGunnyBag + totalOthers;
+
+            // Expense Cost Per Quintal
+            const expenseCostPerQuintal = weightInQuintals > 0 ? (totalExpenses / weightInQuintals) : 0;
+
+            // Total Landed Cost (Base Goods + All Expenses)
             const totalLandedCost = totalBaseGoodsValue + totalExpenses;
-            const finalLandedPerQuintal = weight > 0 ? (totalLandedCost / weight) : 0;
+            const finalLandedPerQuintal = weightInQuintals > 0 ? (totalLandedCost / weightInQuintals) : 0;
 
-            // Update Main Displays safely
+            // Update Input Sub-Labels (Inline calculated totals)
+            const setInline = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = currencyFormatter.format(val);
+            };
+            setInline('calcHamaliLoading', totalHamaliLoading);
+            setInline('calcTransport', totalTransportation);
+            setInline('calcHamaliUnloading', totalHamaliUnloading);
+            setInline('calcChanni', totalChanni);
+            setInline('calcBrokerage', totalBrokerage);
+            setInline('calcGunnyBag', totalGunnyBag);
+
+            // Update Top & Mobile Sticky Total Displays
             const totalExpensesDisplay = document.getElementById('totalExpensesDisplay');
             const perQuintalBreakdownText = document.getElementById('perQuintalBreakdownText');
             const mobileBottomTotal = document.getElementById('mobileBottomTotal');
@@ -438,7 +516,7 @@
             if (mobileBottomTotal) mobileBottomTotal.textContent = currencyFormatter.format(totalExpenses);
 
             if (perQuintalBreakdownText) {
-                if (weight > 0) {
+                if (weightInQuintals > 0) {
                     perQuintalBreakdownText.textContent = `Expense: ₹ ${currencyFormatter.format(expenseCostPerQuintal)} / Qtl`;
                 } else {
                     perQuintalBreakdownText.textContent = `Enter weight for Qtl rate`;
@@ -449,12 +527,13 @@
                 mobileBottomLandedPerQtl.textContent = `₹ ${currencyFormatter.format(finalLandedPerQuintal)} / Qtl`;
             }
 
-            // Update Summary Breakdown Elements
+            // Update Itemized Summary Breakdown Table
             const summaryBasePurchase = document.getElementById('summaryBasePurchase');
             const summaryHamaliLoading = document.getElementById('summaryHamaliLoading');
             const summaryTransport = document.getElementById('summaryTransport');
             const summaryHamaliUnloading = document.getElementById('summaryHamaliUnloading');
             const summaryChanni = document.getElementById('summaryChanni');
+            const summaryBrokerage = document.getElementById('summaryBrokerage');
             const summaryGunnyBag = document.getElementById('summaryGunnyBag');
             const summaryOthers = document.getElementById('summaryOthers');
             const summaryWeight = document.getElementById('summaryWeight');
@@ -463,13 +542,14 @@
             const summaryLandedPerQtl = document.getElementById('summaryLandedPerQtl');
 
             if (summaryBasePurchase) summaryBasePurchase.textContent = '₹ ' + currencyFormatter.format(totalBaseGoodsValue);
-            if (summaryHamaliLoading) summaryHamaliLoading.textContent = '₹ ' + currencyFormatter.format(hamaliLoading);
-            if (summaryTransport) summaryTransport.textContent = '₹ ' + currencyFormatter.format(transport);
-            if (summaryHamaliUnloading) summaryHamaliUnloading.textContent = '₹ ' + currencyFormatter.format(hamaliUnloading);
-            if (summaryChanni) summaryChanni.textContent = '₹ ' + currencyFormatter.format(channi);
-            if (summaryGunnyBag) summaryGunnyBag.textContent = '₹ ' + currencyFormatter.format(gunnyBag);
-            if (summaryOthers) summaryOthers.textContent = '₹ ' + currencyFormatter.format(others);
-            if (summaryWeight) summaryWeight.textContent = weight.toFixed(2) + ' Qtl';
+            if (summaryHamaliLoading) summaryHamaliLoading.textContent = '₹ ' + currencyFormatter.format(totalHamaliLoading);
+            if (summaryTransport) summaryTransport.textContent = '₹ ' + currencyFormatter.format(totalTransportation);
+            if (summaryHamaliUnloading) summaryHamaliUnloading.textContent = '₹ ' + currencyFormatter.format(totalHamaliUnloading);
+            if (summaryChanni) summaryChanni.textContent = '₹ ' + currencyFormatter.format(totalChanni);
+            if (summaryBrokerage) summaryBrokerage.textContent = '₹ ' + currencyFormatter.format(totalBrokerage);
+            if (summaryGunnyBag) summaryGunnyBag.textContent = '₹ ' + currencyFormatter.format(totalGunnyBag);
+            if (summaryOthers) summaryOthers.textContent = '₹ ' + currencyFormatter.format(totalOthers);
+            if (summaryWeight) summaryWeight.textContent = weightInQuintals.toFixed(2) + ' Qtl';
             if (summaryEffectiveRate) summaryEffectiveRate.textContent = '₹ ' + currencyFormatter.format(expenseCostPerQuintal) + ' / Qtl';
             if (summaryLandedCost) summaryLandedCost.textContent = '₹ ' + currencyFormatter.format(totalLandedCost);
             if (summaryLandedPerQtl) summaryLandedPerQtl.textContent = '₹ ' + currencyFormatter.format(finalLandedPerQuintal) + ' / Qtl';
@@ -477,7 +557,12 @@
 
         // Reset function
         function resetCalculator() {
-            const inputIds = ['totalQuintals', 'baseRate', 'hamaliLoading', 'transportation', 'hamaliUnloading', 'channi', 'gunnyBag', 'others', 'remarks'];
+            const inputIds = [
+                'totalQuintals', 'baseRate', 'hamaliLoadingRate', 
+                'transportRatePerTon', 'hamaliUnloadingRate', 'channiRate', 
+                'brokerageRatePerQtl', 'gunnyBagCost', 'gunnyBagCount', 
+                'others', 'remarks'
+            ];
             inputIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
@@ -485,27 +570,23 @@
             calculateExpenses();
         }
 
-        // Initialization and Event Attachment on Load
+        // Disable mouse wheel scroll numeric modifications
+        document.addEventListener('wheel', function(event) {
+            if (document.activeElement.type === 'number') {
+                document.activeElement.blur();
+            }
+        }, { passive: true });
+
+        // Initialize on page load
         window.onload = function() {
-            // Set Print Metadata
-            const printDate = document.getElementById('printDate');
-            const printInvoiceNo = document.getElementById('printInvoiceNo');
-            if (printDate) printDate.textContent = new Date().toLocaleDateString('en-IN');
-            if (printInvoiceNo) printInvoiceNo.textContent = 'ADL-' + Math.floor(100000 + Math.random() * 900000);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            const printDateEl = document.getElementById('printDate');
+            const printInvoiceNoEl = document.getElementById('printInvoiceNo');
+            
+            if (printDateEl) printDateEl.textContent = dateStr;
+            if (printInvoiceNoEl) printInvoiceNoEl.textContent = 'ADB-' + Math.floor(100000 + Math.random() * 900000);
 
-            // Prevent scroll wheel changes on inputs
-            document.querySelectorAll('input[type=number]').forEach(input => {
-                input.addEventListener('wheel', function(e) {
-                    e.preventDefault();
-                }, { passive: false });
-
-                // Event listeners for live dynamic triggers
-                input.addEventListener('input', calculateExpenses);
-                input.addEventListener('keyup', calculateExpenses);
-                input.addEventListener('change', calculateExpenses);
-            });
-
-            // Initial calculation call
             calculateExpenses();
         };
     </script>
